@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Caching.CSRedis" Version="3.8.670" />
+    <PackageReference Include="CSRedisCore" Version="3.8.670" />
+    <PackageReference Include="Dapper" Version="2.0.143" />
+    <PackageReference Include="MySql.Data" Version="8.1.0" />
+    <PackageReference Include="prometheus-net.AspNetCore" Version="8.0.0" />
+    <PackageReference Include="FluentValidation.AspNetCore" Version="11.2.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Abstractions" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
+    <PackageReference Include="PinYinConverterCore" Version="1.0.2" />
+    <PackageReference Include="shortid" Version="4.0.0" />
+    <PackageReference Include="Snowflake.Core" Version="2.0.0" />
+    <PackageReference Include="System.Text.Json" Version="7.0.3" />
+    <PackageReference Include="AspectCore.Core" Version="2.3.0" />
+    <PackageReference Include="AspectCore.Extensions.Autofac" Version="2.2.0" />
+    <PackageReference Include="AspectCore.Extensions.DependencyInjection" Version="2.2.0" />
+    <PackageReference Include="Autofac" Version="6.4.0" />
+    <PackageReference Include="StackExchange.Redis" Version="2.6.90" />
+    <PackageReference Include="Flurl.Http" Version="3.2.4" />
+    <PackageReference Include="Confluent.Kafka" Version="1.9.3" />
+  </ItemGroup>
+</Project>
