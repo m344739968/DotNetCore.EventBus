@@ -141,7 +141,7 @@ public class MonitorCompensateService : BackgroundService
     {
         using var conn = new MySqlConnection(_mySqlOptions.Value.ConnectionString);
         var result = await conn.QuerySingleOrDefaultAsync<long>(
-            "select count(1) from event_publish_message_record where status=@status and try_count=@tryCount;",
+            $"select count(1) from {_kafkaOptions.Value.TopicPrefix}_publish_message_record where status=@status and tryCount=@tryCount;",
             new { status = (int)(int)EventStatusEnums.Failed, tryCount = _kafkaOptions.Value.RetryCount });
         return result;
     }
@@ -157,7 +157,7 @@ public class MonitorCompensateService : BackgroundService
     {
         using var conn = new MySqlConnection(_mySqlOptions.Value.ConnectionString);
         var result = await conn.QueryAsync<EventPublishMessageRecord>(
-            "select * from event_publish_message_record where status=@status and try_count=@tryCount limit @start,@limit",
+            $"select * from {_kafkaOptions.Value.TopicPrefix}_publish_message_record where status=@status and tryCount=@tryCount limit @start,@limit",
             new
             {
                 status = (int)(int)EventStatusEnums.Failed,

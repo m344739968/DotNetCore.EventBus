@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MySql.Data.MySqlClient;
 using Dapper;
+using DotNetCore.EventBus.Infrastructure.Kafka;
 
 namespace DotNetCore.EventBus
 {
@@ -15,27 +16,38 @@ namespace DotNetCore.EventBus
         private readonly ILogger<MysqlInitialization> _logger;
         private readonly IOptions<MySqlOptions> _mySqlOptions;
         private readonly IOptions<EventbusOptions> _eventbusOptions;
+        private readonly KafkaConsumerClient _kafkaConsumerClient;
 
         /// <summary>
         /// mysql init
         /// </summary>
         /// <param name="mySqlOptions"></param>
-        public MysqlInitialization(ILogger<MysqlInitialization> logger, IOptions<MySqlOptions> mySqlOptions, IOptions<EventbusOptions> eventbusOptions) 
+        public MysqlInitialization(ILogger<MysqlInitialization> logger, 
+            IOptions<MySqlOptions> mySqlOptions,
+            IOptions<EventbusOptions> eventbusOptions, 
+            KafkaConsumerClient kafkaConsumerClient) 
         {
             _logger = logger;
             _mySqlOptions = mySqlOptions;
             _eventbusOptions = eventbusOptions;
+            _kafkaConsumerClient = kafkaConsumerClient;
         }
 
         public async Task InitializeAsync()
         {
             var sql = CreateDbTablesScript();
             var connection = new MySqlConnection(_mySqlOptions.Value.ConnectionString);
-            await connection.ExecuteAsync(sql);
-            _logger.LogDebug("初始化数据表完成");
+            var result = await connection.ExecuteAsync(sql);
+            _logger.LogDebug("初始化数据表完成，初始化结果：" + result);
+
+
+            // 初始化topic
+            var topicName = $"{_eventbusOptions.Value.TopicPrefix}_test";
+            var res = await _kafkaConsumerClient.CreateTopics(new List<string>() { topicName });
+            _logger.LogDebug($"初始化消息topic：【{topicName}】，结果：" + res);
         }
 
-        protected virtual string CreateDbTablesScript()
+        protected string CreateDbTablesScript()
         {
             var batchSql =
                 $@"
@@ -51,7 +63,7 @@ CREATE TABLE IF NOT EXISTS `{_eventbusOptions.Value.TopicPrefix}_register_list` 
   `ModifiedTime` datetime DEFAULT NULL COMMENT '修改时间',
   `Remark` varchar(50) DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `idx_event_name` (`event_name`)
+  UNIQUE KEY `idx_event_name` (`EventName`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='注册事件列表';
 
 CREATE TABLE IF NOT EXISTS `{_eventbusOptions.Value.TopicPrefix}_subscribe_list` (
@@ -72,7 +84,7 @@ CREATE TABLE IF NOT EXISTS `{_eventbusOptions.Value.TopicPrefix}_subscribe_list`
   `ModifiedTime` datetime DEFAULT NULL COMMENT '修改时间',
   `Remark` varchar(50) DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`id`),
-  KEY `idx_event_name` (`client_id`,`event_name`) USING BTREE
+  KEY `idx_event_name` (`ClientId`,`EventName`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='事件订阅列表';
 
 CREATE TABLE IF NOT EXISTS `{_eventbusOptions.Value.TopicPrefix}_publish_message_record` (
@@ -89,8 +101,8 @@ CREATE TABLE IF NOT EXISTS `{_eventbusOptions.Value.TopicPrefix}_publish_message
   `Remark` varchar(50) DEFAULT NULL COMMENT '备注信息',
   `TryCount` int DEFAULT NULL COMMENT '重试次数，默认3',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `idx_event_id` (`event_id`) USING BTREE,
-  KEY `idx_event_name` (`event_name`,`created_time`) USING BTREE
+  UNIQUE KEY `idx_event_id` (`EventId`) USING BTREE,
+  KEY `idx_event_name` (`EventName`,`CreatedTime`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='事件发布消息记录表';
 
 CREATE TABLE IF NOT EXISTS `{_eventbusOptions.Value.TopicPrefix}_subscribe_message_record` (
@@ -110,7 +122,7 @@ CREATE TABLE IF NOT EXISTS `{_eventbusOptions.Value.TopicPrefix}_subscribe_messa
   `CreatedTime` datetime DEFAULT NULL COMMENT '创建时间',
   `Remark` text  COMMENT '备注',
   PRIMARY KEY (`id`),
-  KEY `idx_event_id` (`event_id`,`event_name`,`created_time`) USING BTREE
+  KEY `idx_event_id` (`EventId`,`EventName`,`CreatedTime`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='事件消息订阅者执行记录表';
 
 ";

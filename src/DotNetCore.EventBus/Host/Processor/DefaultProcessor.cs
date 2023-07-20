@@ -202,7 +202,7 @@ public class DefaultProcessor : IProcessor
             return result;
         }
         using var conn = new MySqlConnection(_mySqlOptions.Value.ConnectionString);
-        result = (await conn.QueryAsync<SubscribeEventList>("select * from event_subscribe_list")).ToList();
+        result = (await conn.QueryAsync<SubscribeEventList>($"select * from {_kafkaOptions.Value.TopicPrefix}_subscribe_list")).ToList();
         await RedisHelper.SetAsync(cacheKey, result, TimeSpan.FromDays(1));
         return result;
     }
@@ -215,7 +215,7 @@ public class DefaultProcessor : IProcessor
     public async Task<List<EventSubscribeMessageRecord>> GetEventSubscribeMessageRecord(string eventId)
     {
         using var conn = new MySqlConnection(_mySqlOptions.Value.ConnectionString);
-        var result = (await conn.QueryAsync<EventSubscribeMessageRecord>("select * from event_subscribe_message_record")).ToList();
+        var result = (await conn.QueryAsync<EventSubscribeMessageRecord>($"select * from {_kafkaOptions.Value.TopicPrefix}_subscribe_message_record")).ToList();
         return result;
     }
 
@@ -227,7 +227,8 @@ public class DefaultProcessor : IProcessor
     public async Task<bool> CreateEventSubscribeMessageRecord(EventSubscribeMessageRecord model)
     {
         using var conn = new MySqlConnection(_mySqlOptions.Value.ConnectionString);
-        var sql = "insert into event_subscribe_message_record(Name,Remark) values(@Name,@Remark)";
+        var sql = $"insert into {_kafkaOptions.Value.TopicPrefix}_subscribe_message_record(Id,EventId,EventName,SubscribeId,SubscribeClientId,Status,RequestUrl,RequestContent,ResponseStatus,ResponseContent,Remark,CreatedBy,CreatedName,CreatedTime) " +
+            $"values(@Id,@EventId,@EventName,@SubscribeId,@SubscribeClientId,@Status,@RequestUrl,@RequestContent,@ResponseStatus,@ResponseContent,@Remark,@CreatedBy,@CreatedName,@CreatedTime)";
         var result = await conn.ExecuteAsync(sql, model);
         return result > 0;
     }
@@ -241,7 +242,7 @@ public class DefaultProcessor : IProcessor
     {
         var status = isSuccess ? EventStatusEnums.Successed : EventStatusEnums.Failed;
         using var conn = new MySqlConnection(_mySqlOptions.Value.ConnectionString);
-        var sql = "update event_publish_message_record set try_count=try_count+1, status=@status where event_id=@eventId";
+        var sql = $"update {_kafkaOptions.Value.TopicPrefix}_publish_message_record set try_count=tryCount+1, status=@status where eventId=@eventId";
         var result = await conn.ExecuteAsync(sql, new { status = (int)status, eventId = eventId });
         return result > 0;
     }
@@ -254,7 +255,7 @@ public class DefaultProcessor : IProcessor
     public async Task<bool> UpdateEventPublishMessageRecordTryCount(string eventId)
     {
         using var conn = new MySqlConnection(_mySqlOptions.Value.ConnectionString);
-        var sql = "update event_publish_message_record set try_count=try_count+1 where event_id=@eventId";
+        var sql = $"update {_kafkaOptions.Value.TopicPrefix}_publish_message_record set tryCount=tryCount+1 where eventId=@eventId";
         var result = await conn.ExecuteAsync(sql, new { eventId = eventId });
         return result > 0;
     }

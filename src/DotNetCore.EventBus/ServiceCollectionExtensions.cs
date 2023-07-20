@@ -1,4 +1,6 @@
 ﻿using DotNetCore.EventBus.Host;
+using DotNetCore.EventBus.Infrastructure.Http;
+using DotNetCore.EventBus.Infrastructure.Kafka;
 using DotNetCore.EventBus.Infrastructure.Models.Options;
 using DotNetCore.EventBus.Infrastructure.Redis;
 using Microsoft.Extensions.Configuration;
@@ -25,7 +27,10 @@ namespace DotNetCore.EventBus
             services.Configure<EventbusOptions>(configuration.GetSection("EventBus"));
             var redisConn = configuration["Redis:ConnectionString"];
             services.AddCsRedis(redisConn);
-
+            services.AddHttpClient();
+            services.AddFlurlHttpClient();
+            services.AddSingleton<KafkaConsumerClient>();
+            services.AddSingleton<KafkaProduceClient>();
             services.AddSingleton<MysqlInitialization>();
             // 监听消息
             services.AddMonitorService();
