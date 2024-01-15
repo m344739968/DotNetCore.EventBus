@@ -8,6 +8,6 @@ namespace DotNetCore.EventBus.Infrastructure.Models.Constant
         /// <summary>
         /// 前缀
         /// </summary>
-        public static string Prefix = "Fast.EventBus";
+        public static string Prefix = "DotNetCore.EventBus";
     }
 }

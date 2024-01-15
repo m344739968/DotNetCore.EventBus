@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Ardalis.Result" Version="7.2.0" />
     <PackageReference Include="Caching.CSRedis" Version="3.8.670" />
     <PackageReference Include="CSRedisCore" Version="3.8.670" />
     <PackageReference Include="Dapper" Version="2.0.143" />
@@ -19,6 +20,7 @@
     <PackageReference Include="PinYinConverterCore" Version="1.0.2" />
     <PackageReference Include="shortid" Version="4.0.0" />
     <PackageReference Include="Snowflake.Core" Version="2.0.0" />
+    <PackageReference Include="SqlSugar" Version="5.1.4.134" />
     <PackageReference Include="System.Text.Json" Version="7.0.3" />
     <PackageReference Include="AspectCore.Core" Version="2.3.0" />
     <PackageReference Include="AspectCore.Extensions.Autofac" Version="2.2.0" />

@@ -56,21 +56,32 @@ public class FlurlHttpClient
     /// <summary>
     /// PostJson
     /// </summary>
-    /// <param name="apiUrl"></param>
+    /// <param name="url"></param>
+    /// <param name="request"></param>
+    /// <param name="isValidToken"></param>
     /// <param name="token"></param>
-    /// <param name="value"></param>
+    /// <param name="headers"></param>
+    /// <param name="timeout">超时时间（单位：秒）</param>
     /// <returns></returns>
-    public async Task<IFlurlResponse> PostJson(string url,string request, bool isValidToken, string token)
+    public async Task<IFlurlResponse> PostJson(string url, string request, bool isValidToken = false, string token = "", Dictionary<string, string> headers = null, int timeout = 10)
     {
         var content = new StringContent(request, Encoding.UTF8);
-        var headers = new Dictionary<string, string>();
-        headers.Add("content-type", "application/json; charset=utf-8");
+        var headerList = new Dictionary<string, string>();
+        headerList.Add("content-type", "application/json; charset=utf-8");
         if (isValidToken)
         {
-            headers.Add("Authorization", $"Bearer {token}");
+            headerList.Add("Authorization", $"Bearer {token}");
+        }
+        if (headers != null)
+        {
+            foreach (var header in headers)
+            {
+                headerList.Add(header.Key, header.Value);
+            }
         }
         var result = await _flurlClient.Request(url)
             .WithHeaders(headers)
+            .WithTimeout(TimeSpan.FromSeconds(timeout))
             .PostAsync(content);
         return result;
     }

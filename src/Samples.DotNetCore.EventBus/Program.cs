@@ -1,4 +1,6 @@
+using Autofac.Core;
 using DotNetCore.EventBus;
+using Microsoft.Extensions.Caching.Distributed;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +10,11 @@ builder.Services.AddEventBus(builder.Configuration, x =>
 {
     // 
 });
+
+// 注入redis
+var csredis = new CSRedis.CSRedisClient(builder.Configuration["Redis:ConnectionString"]);
+RedisHelper.Initialization(csredis);
+builder.Services.AddSingleton<IDistributedCache>(new Microsoft.Extensions.Caching.Redis.CSRedisCache(RedisHelper.Instance));
 
 // 初始化数据库
 var init = builder.Services.BuildServiceProvider().GetRequiredService<MysqlInitialization>();

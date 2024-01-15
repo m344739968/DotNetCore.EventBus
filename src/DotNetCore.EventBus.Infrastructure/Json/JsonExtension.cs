@@ -1,12 +1,13 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.Unicode;
 
 namespace DotNetCore.EventBus.Infrastructure.Json
 {
     public static class JsonExtension
     {
-                /// <summary>
+        /// <summary>
         /// 对象转json
         /// </summary>
         /// <param name="obj"></param>
@@ -15,7 +16,7 @@ namespace DotNetCore.EventBus.Infrastructure.Json
         {
             if (obj == null) return string.Empty;
             var options = new JsonSerializerOptions();
-            options.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);
+            options.Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping; // JavaScriptEncoder.Create(UnicodeRanges.All);
             var jsonstr = JsonSerializer.Serialize(obj, options: options);
             return jsonstr;
         }
@@ -31,9 +32,10 @@ namespace DotNetCore.EventBus.Infrastructure.Json
             var optionsJson = new JsonSerializerOptions
             {
                 WriteIndented = true,
-                IgnoreNullValues = true,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                // IgnoreNullValues = true,
                 PropertyNameCaseInsensitive = true,
-                Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
             };
             var obj = JsonSerializer.Deserialize<T>(json, optionsJson);
             return obj;
